@@ -14,24 +14,24 @@ return new class extends Migration
         Schema::create('entreprises', function (Blueprint $table) {
        $table->id();
             $table->string('nom_entreprise', 255);
-            $table->string('code_ice', 50)->unique();
+            $table->string('code_ice', 50)->nullable();
             $table->string('rc', 50)->nullable()->unique();
 
 
-            $table->enum('forme_juridique', ['SA', 'SARL', 'SNC', 'SCS', 'autre']);
-            $table->enum('type', ['PP', 'PM']);
-            $table->enum('taille_entreprise', ['PME', 'GE', 'SU']);
-            $table->enum('en_activite', ['oui', 'non'])->default('oui');
+            $table->enum('forme_juridique', ['SA', 'SARL', 'SNC', 'SCS', 'autre'])->nullable();
+            $table->enum('type', ['PP', 'PM'])->nullable();
+            $table->enum('taille_entreprise', ['PME', 'GE', 'SU'])->nullable();
+            $table->enum('en_activite', ['oui', 'non'])->default('oui')->nullable();
 
 
             $table->text('adresse');
-            $table->string('ville', 255);
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('ville', 255)->nullable();
+            $table->decimal('latitude', 10, 8);
+            $table->decimal('longitude', 11, 8);
 
 
-            $table->text('secteur');
-            $table->string('activite', 255);
+            $table->text('secteur')->nullable();
+            $table->string('activite', 255)->nullable();
             $table->text('certifications')->nullable();
 
 

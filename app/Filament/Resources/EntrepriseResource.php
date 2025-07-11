@@ -27,7 +27,7 @@ class EntrepriseResource extends Resource
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('code_ICE')
-
+                    ->label('ICE')
                     ->maxLength(50),
 
                 Forms\Components\TextInput::make('rc')
@@ -75,6 +75,8 @@ class EntrepriseResource extends Resource
                     ])
                     ->default('oui')
                     ,
+
+
 
 
 
@@ -174,6 +176,7 @@ Forms\Components\Textarea::make('adresse')
                     ->nullable(),
 
                 Forms\Components\TextInput::make('if')
+                    ->label('IF')
                     ->maxLength(50)
                     ->nullable(),
 
@@ -182,7 +185,7 @@ Forms\Components\Textarea::make('adresse')
                     ->nullable(),
 
                 Forms\Components\DateTimePicker::make('date_creation')
-                    ->required(),
+                    
             ]);
     }
 

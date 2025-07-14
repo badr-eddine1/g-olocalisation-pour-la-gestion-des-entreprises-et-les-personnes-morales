@@ -12,11 +12,20 @@ use Filament\Tables;
 use App\Forms\Components\LeafletMap;
 use Illuminate\Support\Facades\Http;
      use Filament\Facades\Filament;
+     use Illuminate\Support\Facades\Auth;
 class EntrepriseResource extends Resource
 {
     protected static ?string $model = Entreprise::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+           public static function shouldRegisterNavigation(): bool
+{
+    return optional(Auth::user())->isAdmin() ?? false;
+}
+       public static function canAccess(): bool
+{
+    return optional(Auth::user())->isAdmin() ?? false;
+}
 
     public static function form(Form $form): Form
     {
@@ -185,7 +194,7 @@ Forms\Components\Textarea::make('adresse')
                     ->nullable(),
 
                 Forms\Components\DateTimePicker::make('date_creation')
-                    
+
             ]);
     }
 

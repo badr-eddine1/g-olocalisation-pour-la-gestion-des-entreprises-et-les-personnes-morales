@@ -39,10 +39,16 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('role')
-                    ->required()
-                    ->maxLength(255)
-                    ->default('visiteur'),
+      Forms\Components\Select::make('role')
+    ->required()
+    ->options([
+        'admin' => 'Admin',
+        'gestionnaire' => 'Gestionnaire',
+        'visiteur' => 'Visiteur',
+    ])
+    ->default('visiteur')
+    ->label('Rôle'),
+
                 Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()

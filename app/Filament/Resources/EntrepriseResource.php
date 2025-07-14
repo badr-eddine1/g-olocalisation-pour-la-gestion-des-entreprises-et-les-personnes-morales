@@ -20,11 +20,11 @@ class EntrepriseResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
            public static function shouldRegisterNavigation(): bool
 {
-    return optional(Auth::user())->isAdmin() ?? false;
+    return optional(Auth::user())->isGestionnaire() ?? false;
 }
        public static function canAccess(): bool
 {
-    return optional(Auth::user())->isAdmin() ?? false;
+    return optional(Auth::user())->isGestionnaire() ?? false;
 }
 
     public static function form(Form $form): Form

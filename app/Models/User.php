@@ -56,8 +56,5 @@ class User extends Authenticatable
         return $this->role === 'gestionnaire';
     }
 
-    public function isVisiteur(): bool
-    {
-        return $this->role === 'visiteur';
-    }
+  
 }

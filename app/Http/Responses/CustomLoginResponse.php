@@ -17,11 +17,10 @@ class CustomLoginResponse implements LoginResponseContract
     return redirect()->route('filament.admin.pages.admin-dashboard');
 }
 
-if ($user->isGestionnaire()) {
     return redirect()->route('filament.admin.pages.dashboard');
-}
 
-return redirect()->route('filament.admin.pages.visiteur-dashboard');
+
+
 
     }
 }

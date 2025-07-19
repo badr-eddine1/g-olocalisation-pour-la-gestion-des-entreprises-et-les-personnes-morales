@@ -106,6 +106,10 @@
         .table-row-hover:hover {
             background-color: rgba(255, 193, 7, 0.1);
         }
+
+        select option[disabled][selected] {
+            color: #9CA3AF;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 pt-20 font-sans scroll-smooth">
@@ -229,7 +233,8 @@
             </div>
 
             <!-- Barre de recherche et filtres -->
-            <form method="GET" action="/" class="mb-10 bg-gray-50 p-6 rounded-xl shadow-sm">
+            <form method="GET" action="/" id="filter-form" class="mb-10 bg-gray-50 p-6 rounded-xl shadow-sm">
+                <input type="hidden" name="scroll_position" id="scroll_position" value="{{ request('scroll_position') }}">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -244,7 +249,7 @@
                             <i class="fas fa-city text-gray-400"></i>
                         </div>
                         <select name="ville" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
-                            <option value="">Toutes les villes</option>
+                            <option value="" disabled selected hidden class="text-gray-400">Sélectionnez une ville</option>
                             @foreach ($villes as $ville)
                                 <option value="{{ $ville }}" {{ request('ville') == $ville ? 'selected' : '' }}>{{ $ville }}</option>
                             @endforeach
@@ -259,7 +264,7 @@
                             <i class="fas fa-briefcase text-gray-400"></i>
                         </div>
                         <select name="secteur" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
-                            <option value="">Tous les secteurs</option>
+                            <option value="" disabled selected hidden class="text-gray-400">Sélectionnez un secteur</option>
                             @foreach ($secteurs as $secteur)
                                 <option value="{{ $secteur }}" {{ request('secteur') == $secteur ? 'selected' : '' }}>{{ $secteur }}</option>
                             @endforeach
@@ -280,93 +285,104 @@
                 </div>
             </form>
 
-            <!-- Tableau -->
-            <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-building mr-2"></i> Nom
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-2"></i> Ville
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-industry mr-2"></i> Secteur
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-phone-alt mr-2"></i> Téléphone
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse ($entreprises as $entreprise)
-                            <tr class="table-row-hover transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-building text-primary-600"></i>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $entreprise->nom_entreprise }}</div>
-                                            <div class="text-sm text-gray-500">{{ $entreprise->adresse }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $entreprise->ville }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
-                                        {{ $entreprise->secteur }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <a href="tel:{{ $entreprise->tel }}" class="hover:text-primary-600 transition">
-                                        {{ $entreprise->tel }}
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="#" class="text-primary-600 hover:text-primary-900 mr-3" onclick="showOnMap({{ $entreprise->latitude }}, {{ $entreprise->longitude }})">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                    </a>
-                                    <a href="tel:{{ $entreprise->tel }}" class="text-green-600 hover:text-green-900">
-                                        <i class="fas fa-phone-alt"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                    <div class="flex flex-col items-center justify-center py-8">
-                                        <i class="fas fa-search fa-3x text-gray-300 mb-4"></i>
-                                        <p class="text-lg">Aucune entreprise trouvée</p>
-                                        <p class="text-sm mt-2">Essayez de modifier vos critères de recherche</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <!-- Message quand aucun filtre n'est appliqué -->
+            <div id="no-filters-message" class="{{ request('search') || request('ville') || request('secteur') ? 'hidden' : 'text-center py-12' }}">
+                <div class="bg-gray-50 p-8 rounded-lg max-w-md mx-auto">
+                    <i class="fas fa-filter text-4xl text-primary-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Appliquez des filtres pour voir les résultats</h3>
+                    <p class="text-gray-600 mb-4">Utilisez les champs de recherche ci-dessus pour afficher les entreprises correspondantes.</p>
+                </div>
             </div>
 
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-between">
-                <div class="text-sm text-gray-500 mb-4 sm:mb-0">
-                    Affichage de {{ $entreprises->firstItem() }} à {{ $entreprises->lastItem() }} sur {{ $entreprises->total() }} résultats
+            <!-- Tableau (caché initialement) -->
+            <div id="results-container" class="{{ request('search') || request('ville') || request('secteur') ? '' : 'hidden' }}">
+                <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-building mr-2"></i> Nom
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt mr-2"></i> Ville
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-industry mr-2"></i> Secteur
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-phone-alt mr-2"></i> Téléphone
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse ($entreprises as $entreprise)
+                                <tr class="table-row-hover transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-building text-primary-600"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">{{ $entreprise->nom_entreprise }}</div>
+                                                <div class="text-sm text-gray-500">{{ $entreprise->adresse }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $entreprise->ville }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                            {{ $entreprise->secteur }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <a href="tel:{{ $entreprise->tel }}" class="hover:text-primary-600 transition">
+                                            {{ $entreprise->tel }}
+                                        </a>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-primary-600 hover:text-primary-900 mr-3" onclick="showOnMap({{ $entreprise->latitude }}, {{ $entreprise->longitude }})">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </a>
+                                        <a href="tel:{{ $entreprise->tel }}" class="text-green-600 hover:text-green-900">
+                                            <i class="fas fa-phone-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center py-8">
+                                            <i class="fas fa-search fa-3x text-gray-300 mb-4"></i>
+                                            <p class="text-lg">Aucune entreprise trouvée</p>
+                                            <p class="text-sm mt-2">Essayez de modifier vos critères de recherche</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                <div class="flex items-center">
-                    {{ $entreprises->appends(request()->query())->links('pagination::tailwind') }}
+
+                <div class="mt-8 flex flex-col sm:flex-row items-center justify-between">
+                    <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+                        Affichage de {{ $entreprises->firstItem() }} à {{ $entreprises->lastItem() }} sur {{ $entreprises->total() }} résultats
+                    </div>
+                    <div class="flex items-center">
+                        {{ $entreprises->appends(request()->query())->links('pagination::tailwind') }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -630,6 +646,24 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
+    // Sauvegarder la position avant soumission du formulaire
+    document.getElementById('filter-form').addEventListener('submit', function() {
+        document.getElementById('scroll_position').value = window.scrollY;
+    });
+
+    // Après chargement de la page, restaurer la position
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollPosition = {{ request('scroll_position') ?? 0 }};
+        if (scrollPosition > 0) {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'auto'
+                });
+            }, 50);
+        }
+    });
+
     // Mobile menu toggle
     document.getElementById('mobile-menu-button').addEventListener('click', function() {
         const menu = document.getElementById('mobile-menu');

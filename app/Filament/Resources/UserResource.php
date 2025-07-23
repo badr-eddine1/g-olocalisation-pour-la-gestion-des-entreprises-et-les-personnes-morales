@@ -32,7 +32,7 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                Forms\Components\TextInput::make('nom')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
@@ -61,7 +61,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('nom')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),

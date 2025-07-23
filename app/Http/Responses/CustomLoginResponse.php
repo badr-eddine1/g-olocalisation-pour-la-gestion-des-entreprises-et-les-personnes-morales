@@ -16,8 +16,12 @@ class CustomLoginResponse implements LoginResponseContract
        if ($user->isAdmin()) {
     return redirect()->route('filament.admin.pages.admin-dashboard');
 }
-
-    return redirect()->route('filament.admin.pages.dashboard');
+    if($user->isGestionnaire()){
+        return redirect()->route('filament.admin.pages.dashboard');
+    }
+    if(!$user->isAdmin() || !$user->isGestionnaire()){
+        abort(403, "Accès refusé");
+    }
 
 
 

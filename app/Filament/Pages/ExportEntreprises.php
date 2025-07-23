@@ -16,7 +16,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
+use Illuminate\Support\Facades\Auth;
 class ExportEntreprises extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -28,7 +28,10 @@ class ExportEntreprises extends Page implements HasForms
     protected static ?string $navigationGroup = 'Gestion';
 
     public ?array $data = [];
-
+       public static function shouldRegisterNavigation(): bool
+{
+    return optional(Auth::user())->isGestionnaire() ?? false;
+}
   public function mount(): void
 {
     try {
@@ -231,7 +234,7 @@ class ExportEntreprises extends Page implements HasForms
                 return $this->exportToCsv($query, $fields);
         }
     } catch (\Exception $e) {
-        Log::error('Export error: ' . $e->getMessage());
+
 
         Notification::make()
             ->title('Erreur lors de l\'export')
@@ -282,7 +285,7 @@ private function buildQuery()
         return $query->orderBy('nom_entreprise');
     } catch (\Exception $e) {
 
-        \Log::error('Error building query: ' . $e->getMessage());
+
         return Entreprise::query()->orderBy('nom_entreprise');
     }
 }
@@ -418,7 +421,7 @@ private function buildQuery()
         ]);
 
     } catch (\Exception $e) {
-        \Log::error('PDF Export error: ' . $e->getMessage());
+
 
         return new StreamedResponse(function () use ($e) {
             echo 'Erreur lors de la génération du PDF: ' . $e->getMessage();

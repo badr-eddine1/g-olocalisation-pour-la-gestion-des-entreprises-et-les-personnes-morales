@@ -12,15 +12,21 @@ class LeafletMap extends Field
     {
         parent::setUp();
 
-        $this->afterStateHydrated(function (LeafletMap $component, $state) {
-            if (!is_array($state)) {
-                $component->state([
-                    'lat' => 31.63,
-                    'lng' => -8.0,
-                ]);
-            }
-        });
+        // Set default coordinates (Casablanca)
+        $this->default(['lat' => 33.5731, 'lng' => -7.5898]);
+    }
 
-        $this->dehydrateStateUsing(fn ($state) => $state);
+    public function getInitialMapState(): array
+    {
+        $state = $this->getState();
+
+        if (is_array($state) && isset($state['lat']) && isset($state['lng'])) {
+            return [
+                'lat' => (float) $state['lat'],
+                'lng' => (float) $state['lng']
+            ];
+        }
+
+        return ['lat' => 33.5731, 'lng' => -7.5898]; // Default to Casablanca
     }
 }

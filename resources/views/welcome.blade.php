@@ -195,7 +195,7 @@
             <!-- Stats Section -->
             <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto animate-slide-up animation-delay-300">
                 <div class="bg-white bg-opacity-10 p-6 rounded-xl backdrop-blur-sm border border-white border-opacity-20">
-                    <div class="text-3xl font-bold mb-2">{{ $totalEntreprises ?? '100+' }}</div>
+                    <div class="text-3xl font-bold mb-2">{{ $stats['total'] ?? '100+' }}</div>
                     <div class="text-sm opacity-80">Entreprises</div>
                 </div>
                 <div class="bg-white bg-opacity-10 p-6 rounded-xl backdrop-blur-sm border border-white border-opacity-20">
@@ -274,6 +274,65 @@
                         </div>
                     </div>
 
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-balance-scale text-gray-400"></i>
+                        </div>
+                        <select name="forme_juridique" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
+                            <option value="" disabled selected hidden class="text-gray-400">Forme juridique</option>
+                            @foreach ($formesJuridiques as $forme)
+                                <option value="{{ $forme }}" {{ request('forme_juridique') == $forme ? 'selected' : '' }}>{{ $forme }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-tag text-gray-400"></i>
+                        </div>
+                        <select name="type" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
+                            <option value="" disabled selected hidden class="text-gray-400">Type</option>
+                            @foreach ($types as $type)
+                                <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chart-line text-gray-400"></i>
+                        </div>
+                        <select name="taille" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
+                            <option value="" disabled selected hidden class="text-gray-400">Taille entreprise</option>
+                            @foreach ($tailles as $taille)
+                                <option value="{{ $taille }}" {{ request('taille') == $taille ? 'selected' : '' }}>{{ $taille }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-power-off text-gray-400"></i>
+                        </div>
+                        <select name="etat" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none">
+                            <option value="" disabled selected hidden class="text-gray-400">État</option>
+                            <option value="oui" {{ request('etat') == 'oui' ? 'selected' : '' }}>Actif</option>
+                            <option value="non" {{ request('etat') == 'non' ? 'selected' : '' }}>Inactif</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+
                     <div class="flex gap-2">
                         <button type="submit" class="bg-primary-500 text-white px-6 py-3 rounded-lg hover:bg-primary-600 transition flex-1 flex items-center justify-center gap-2">
                             <i class="fas fa-filter"></i> Filtrer
@@ -285,8 +344,12 @@
                 </div>
             </form>
 
+            @php
+                $hasFilters = request('search') || request('ville') || request('secteur') || request('forme_juridique') || request('type') || request('taille') || request('etat');
+            @endphp
+
             <!-- Message quand aucun filtre n'est appliqué -->
-            <div id="no-filters-message" class="{{ request('search') || request('ville') || request('secteur') ? 'hidden' : 'text-center py-12' }}">
+            <div id="no-filters-message" class="{{ $hasFilters ? 'hidden' : 'text-center py-12' }}">
                 <div class="bg-gray-50 p-8 rounded-lg max-w-md mx-auto">
                     <i class="fas fa-filter text-4xl text-primary-500 mb-4"></i>
                     <h3 class="text-xl font-semibold mb-2">Appliquez des filtres pour voir les résultats</h3>
@@ -295,7 +358,7 @@
             </div>
 
             <!-- Tableau (caché initialement) -->
-            <div id="results-container" class="{{ request('search') || request('ville') || request('secteur') ? '' : 'hidden' }}">
+            <div id="results-container" class="{{ $hasFilters ? '' : 'hidden' }}">
                 <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -408,6 +471,70 @@
                     <button id="reset-map-view" class="text-sm bg-white px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition">
                         <i class="fas fa-sync-alt mr-1"></i> Réinitialiser la vue
                     </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistiques Section -->
+    <section id="statistiques" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Statistiques</h2>
+                <div class="w-20 h-1 bg-primary-500 mx-auto mb-6"></div>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Analyse globale de notre base d'entreprises partenaires.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl p-8 shadow-lg">
+                    <div class="text-4xl font-bold mb-2">{{ $stats['total'] }}</div>
+                    <div class="text-lg">Total d'entreprises</div>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-8 shadow-lg">
+                    <div class="text-4xl font-bold mb-2">{{ $stats['actives'] }}</div>
+                    <div class="text-lg">Entreprises actives</div>
+                </div>
+
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg">
+                    <div class="text-4xl font-bold mb-2">{{ $stats['inactives'] }}</div>
+                    <div class="text-lg">Entreprises inactives</div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-city mr-2 text-primary-500"></i> Top 5 des villes
+                    </h3>
+                    <ul class="space-y-3">
+                        @foreach ($stats['par_ville'] as $ville)
+                        <li class="flex justify-between items-center border-b border-gray-100 pb-2">
+                            <span class="font-medium">{{ $ville->ville ?: 'Non spécifié' }}</span>
+                            <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
+                                {{ $ville->total }}
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-industry mr-2 text-primary-500"></i> Top 5 des secteurs
+                    </h3>
+                    <ul class="space-y-3">
+                        @foreach ($stats['par_secteur'] as $secteur)
+                        <li class="flex justify-between items-center border-b border-gray-100 pb-2">
+                            <span class="font-medium">{{ $secteur->secteur ?: 'Non spécifié' }}</span>
+                            <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
+                                {{ $secteur->total }}
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         </div>

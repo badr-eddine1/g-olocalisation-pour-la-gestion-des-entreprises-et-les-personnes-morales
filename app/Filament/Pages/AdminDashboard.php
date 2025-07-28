@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminDashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check'; 
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
     protected static string $view = 'filament.pages.admin-dashboard';
 
@@ -15,5 +15,6 @@ class AdminDashboard extends Page
 {
     return optional(Auth::user())->isAdmin() ?? false;
 }
+
 
 }

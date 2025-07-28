@@ -1,4 +1,7 @@
 <x-filament::page>
-    <h1>Bienvenue sur le dashboard Admin</h1>
-    <p>Contenu spécifique pour les Admin.</p>
+   
+
+
+    {{-- Afficher le widget UserOverview via Livewire --}}
+    @livewire(\App\Filament\Resources\UserResource\Widgets\UserOverview::class)
 </x-filament::page>

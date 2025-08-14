@@ -6,7 +6,7 @@ use Filament\Pages\Page;
 use App\Models\Entreprise;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Auth;
 class Statistiques extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-chart-pie';
@@ -32,7 +32,10 @@ class Statistiques extends Page
     {
         return 'text-purple-500';
     }
-
+           public static function shouldRegisterNavigation(): bool
+{
+    return optional(Auth::user())->isGestionnaire() ?? false;
+}
     // Public properties
     public $totalEntreprises;
     public $entreprisesActives;

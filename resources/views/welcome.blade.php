@@ -118,6 +118,49 @@
             top: 120px;
         }
 
+        .stats-chart {
+            height: 300px;
+            position: relative;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.active {
+            border: 2px solid #ffc107;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #ffc107;
+            transition: width 0.8s ease-in-out;
+        }
+
         @media (max-width: 1023px) {
             .filter-sidebar {
                 height: auto;
@@ -153,6 +196,10 @@
                     Entreprises
                     <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
+                <a href="#statistiques" class="text-gray-700 hover:text-primary-600 transition-colors duration-300 relative group">
+                    Statistiques
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-500 transition-all duration-300 group-hover:w-full"></span>
+                </a>
                 <a href="#services" class="text-gray-700 hover:text-primary-600 transition-colors duration-300 relative group">
                     Services
                     <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-500 transition-all duration-300 group-hover:w-full"></span>
@@ -174,6 +221,7 @@
             <div class="flex flex-col space-y-4">
                 <a href="#home" class="text-gray-700 hover:text-primary-600 transition-colors duration-300">Accueil</a>
                 <a href="#entreprises" class="text-gray-700 hover:text-primary-600 transition-colors duration-300">Entreprises</a>
+                <a href="#statistiques" class="text-gray-700 hover:text-primary-600 transition-colors duration-300">Statistiques</a>
                 <a href="#services" class="text-gray-700 hover:text-primary-600 transition-colors duration-300">Services</a>
                 <a href="#contact" class="text-gray-700 hover:text-primary-600 transition-colors duration-300">Contact</a>
                 <a href="{{ url('admin/login') }}"
@@ -493,61 +541,390 @@
     <section id="statistiques" class="py-16 bg-gray-50">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Statistiques</h2>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Statistiques avancées</h2>
                 <div class="w-20 h-1 bg-primary-500 mx-auto mb-6"></div>
                 <p class="text-gray-600 max-w-2xl mx-auto">
-                    Analyse globale de notre base d'entreprises partenaires.
+                    Explorez nos données statistiques pour obtenir des insights sur notre réseau d'entreprises.
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8 mb-12">
-                <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl p-8 shadow-lg">
-                    <div class="text-4xl font-bold mb-2">{{ $stats['total'] }}</div>
-                    <div class="text-lg">Total d'entreprises</div>
-                </div>
-
-                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-8 shadow-lg">
-                    <div class="text-4xl font-bold mb-2">{{ $stats['actives'] }}</div>
-                    <div class="text-lg">Entreprises actives</div>
-                </div>
-
-                <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg">
-                    <div class="text-4xl font-bold mb-2">{{ $stats['inactives'] }}</div>
-                    <div class="text-lg">Entreprises inactives</div>
-                </div>
+            <!-- Contrôle des statistiques -->
+            <div class="mb-8 flex flex-wrap gap-4 justify-center">
+                <button id="stats-toggle" class="bg-primary-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-600 transition flex items-center justify-center">
+                    <i class="fas fa-chart-bar mr-2"></i> Afficher les statistiques
+                </button>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center">
-                        <i class="fas fa-city mr-2 text-primary-500"></i> Top 5 des villes
-                    </h3>
-                    <ul class="space-y-3">
-                        @foreach ($stats['par_ville'] as $ville)
-                        <li class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <span class="font-medium">{{ $ville->ville ?: 'Non spécifié' }}</span>
-                            <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
-                                {{ $ville->total }}
-                            </span>
-                        </li>
-                        @endforeach
-                    </ul>
+            <!-- Section des statistiques (cachée initialement) -->
+            <div id="stats-container" class="hidden bg-white rounded-xl shadow-lg p-6 transition-all duration-500">
+                <!-- Navigation par onglets -->
+                <div class="flex flex-wrap gap-2 mb-8">
+                    <button class="tab-btn active px-4 py-2 rounded-lg bg-primary-100 text-primary-700" data-tab="overview">
+                        Vue d'ensemble
+                    </button>
+                    <button class="tab-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-tab="location">
+                        Par localisation
+                    </button>
+                    <button class="tab-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-tab="sector">
+                        Par secteur
+                    </button>
+                    <button class="tab-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-tab="size">
+                        Par taille
+                    </button>
+                    <button class="tab-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-tab="status">
+                        Par statut
+                    </button>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6">
+                <!-- Contenu des onglets -->
+                <div class="tab-content active" id="overview-content">
+                    <div class="grid md:grid-cols-3 gap-8 mb-8">
+                        <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl p-8 shadow-lg">
+                            <div class="text-4xl font-bold mb-2">{{ $stats['total'] }}</div>
+                            <div class="text-lg">Total d'entreprises</div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-8 shadow-lg">
+                            <div class="text-4xl font-bold mb-2">{{ $stats['actives'] }}</div>
+                            <div class="text-lg">Entreprises actives</div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-8 shadow-lg">
+                            <div class="text-4xl font-bold mb-2">{{ $stats['inactives'] }}</div>
+                            <div class="text-lg">Entreprises inactives</div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                                <i class="fas fa-city mr-2 text-primary-500"></i> Répartition par ville
+                            </h3>
+                            <div class="space-y-4">
+                                @foreach ($stats['par_ville'] as $ville)
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">{{ $ville->ville ?: 'Non spécifié' }}</span>
+                                        <span class="text-gray-600">{{ $ville->total }} entreprises</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ ($ville->total / $stats['par_ville']->max('total')) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                                <i class="fas fa-industry mr-2 text-primary-500"></i> Répartition par secteur
+                            </h3>
+                            <div class="space-y-4">
+                                @foreach ($stats['par_secteur'] as $secteur)
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">{{ $secteur->secteur ?: 'Non spécifié' }}</span>
+                                        <span class="text-gray-600">{{ $secteur->total }} entreprises</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ ($secteur->total / $stats['par_secteur']->max('total')) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="location-content">
                     <h3 class="text-xl font-semibold mb-4 flex items-center">
-                        <i class="fas fa-industry mr-2 text-primary-500"></i> Top 5 des secteurs
+                        <i class="fas fa-map-marker-alt mr-2 text-primary-500"></i> Statistiques par localisation
                     </h3>
-                    <ul class="space-y-3">
-                        @foreach ($stats['par_secteur'] as $secteur)
-                        <li class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <span class="font-medium">{{ $secteur->secteur ?: 'Non spécifié' }}</span>
-                            <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
-                                {{ $secteur->total }}
-                            </span>
-                        </li>
-                        @endforeach
-                    </ul>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Top 5 des villes</h4>
+                            <div class="space-y-4">
+                                @foreach ($stats['par_ville'] as $ville)
+                                <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                            <span class="text-primary-600 font-bold">{{ $loop->iteration }}</span>
+                                        </div>
+                                        <span class="font-medium">{{ $ville->ville ?: 'Non spécifié' }}</span>
+                                    </div>
+                                    <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ $ville->total }}
+                                    </span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Répartition par région</h4>
+                            <div class="space-y-4">
+                                <!-- Exemple de données - à remplacer par vos données réelles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Casablanca-Settat</span>
+                                    <span class="text-gray-600">35%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 35%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Rabat-Salé-Kénitra</span>
+                                    <span class="text-gray-600">25%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 25%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Marrakech-Safi</span>
+                                    <span class="text-gray-600">15%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 15%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Fès-Meknès</span>
+                                    <span class="text-gray-600">12%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 12%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Autres régions</span>
+                                    <span class="text-gray-600">13%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 13%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="sector-content">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-industry mr-2 text-primary-500"></i> Statistiques par secteur d'activité
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Top 5 des secteurs</h4>
+                            <div class="space-y-4">
+                                @foreach ($stats['par_secteur'] as $secteur)
+                                <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                            <span class="text-primary-600 font-bold">{{ $loop->iteration }}</span>
+                                        </div>
+                                        <span class="font-medium">{{ $secteur->secteur ?: 'Non spécifié' }}</span>
+                                    </div>
+                                    <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ $secteur->total }}
+                                    </span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Répartition par activité</h4>
+                            <div class="space-y-4">
+                                <!-- Exemple de données - à remplacer par vos données réelles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Services</span>
+                                    <span class="text-gray-600">32%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 32%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Commerce</span>
+                                    <span class="text-gray-600">28%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 28%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Industrie</span>
+                                    <span class="text-gray-600">22%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 22%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Agriculture</span>
+                                    <span class="text-gray-600">12%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 12%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Tourisme</span>
+                                    <span class="text-gray-600">6%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 6%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="size-content">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-pie mr-2 text-primary-500"></i> Statistiques par taille d'entreprise
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Répartition par taille</h4>
+                            <div class="space-y-4">
+                                <!-- Exemple de données - à remplacer par vos données réelles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">PME</span>
+                                    <span class="text-gray-600">45%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Grandes entreprises</span>
+                                    <span class="text-gray-600">30%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Start-ups</span>
+                                    <span class="text-gray-600">15%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 15%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Micro-entreprises</span>
+                                    <span class="text-gray-600">10%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 10%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Taille par secteur</h4>
+                            <div class="space-y-4">
+                                <!-- Exemple de données - à remplacer par vos données réelles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Industrie - GE</span>
+                                    <span class="text-gray-600">65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Services - PME</span>
+                                    <span class="text-gray-600">72%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Commerce - SU</span>
+                                    <span class="text-gray-600">38%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 38%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="status-content">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-primary-500"></i> Statistiques par statut
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Répartition par statut</h4>
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="relative">
+                                    <!-- Camembert statique pour l'exemple -->
+                                    <div class="w-48 h-48 rounded-full border-8 border-green-500 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold text-green-600">{{ $stats['actives'] }}</div>
+                                            <div class="text-sm">Actives</div>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-0 right-0 w-24 h-24 rounded-full border-8 border-orange-500"></div>
+                                    <div class="absolute bottom-0 left-0 w-24 h-24 rounded-full border-8 border-gray-300"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center gap-4">
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                                    <span>Actives ({{ $stats['actives'] }})</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-orange-500 rounded mr-2"></div>
+                                    <span>Inactives ({{ $stats['inactives'] }})</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h4 class="text-lg font-medium mb-4">Évolution sur 12 mois</h4>
+                            <div class="space-y-4">
+                                <!-- Exemple de données - à remplacer par vos données réelles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Janvier</span>
+                                    <span class="text-gray-600">+12 nouvelles entreprises</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 40%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Février</span>
+                                    <span class="text-gray-600">+8 nouvelles entreprises</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 27%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Mars</span>
+                                    <span class="text-gray-600">+15 nouvelles entreprises</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Avril</span>
+                                    <span class="text-gray-600">+10 nouvelles entreprises</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 33%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -732,6 +1109,7 @@
                     <ul class="space-y-2">
                         <li><a href="#home" class="text-sm hover:text-white transition">Accueil</a></li>
                         <li><a href="#entreprises" class="text-sm hover:text-white transition">Entreprises</a></li>
+                        <li><a href="#statistiques" class="text-sm hover:text-white transition">Statistiques</a></li>
                         <li><a href="#services" class="text-sm hover:text-white transition">Services</a></li>
                         <li><a href="#contact" class="text-sm hover:text-white transition">Contact</a></li>
                         <li><a href="{{ url('admin/login') }}" class="text-sm hover:text-white transition">Connexion</a></li>
@@ -802,6 +1180,12 @@
                 });
             }, 50);
         }
+
+        // Initialisation de la carte
+        initMap();
+
+        // Initialisation des statistiques
+        initStats();
     });
 
     // Mobile menu toggle
@@ -859,7 +1243,7 @@
     let markersCluster;
     let allMarkers = [];
 
-    document.addEventListener("DOMContentLoaded", function () {
+    function initMap() {
         // Initialisation de la carte centrée sur Maroc
         map = L.map('entreprise-map', {
             zoomControl: false
@@ -939,7 +1323,7 @@
                 map.setView([31.63, -8.0], 6);
             }
         });
-    });
+    }
 
     // Function to show specific marker on map
     function showOnMap(lat, lng) {
@@ -953,6 +1337,54 @@
             if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
                 marker.openPopup();
             }
+        });
+    }
+
+    // Gestion des statistiques
+    function initStats() {
+        // Toggle de la section des statistiques
+        const statsToggle = document.getElementById('stats-toggle');
+        const statsContainer = document.getElementById('stats-container');
+
+        statsToggle.addEventListener('click', function() {
+            statsContainer.classList.toggle('hidden');
+            if (statsContainer.classList.contains('hidden')) {
+                statsToggle.innerHTML = '<i class="fas fa-chart-bar mr-2"></i> Afficher les statistiques';
+            } else {
+                statsToggle.innerHTML = '<i class="fas fa-times mr-2"></i> Masquer les statistiques';
+            }
+        });
+
+        // Navigation par onglets
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Retirer la classe active de tous les boutons
+                tabBtns.forEach(b => b.classList.remove('active', 'bg-primary-100', 'text-primary-700'));
+                tabBtns.forEach(b => b.classList.add('bg-gray-100', 'text-gray-700'));
+
+                // Ajouter la classe active au bouton cliqué
+                this.classList.remove('bg-gray-100', 'text-gray-700');
+                this.classList.add('active', 'bg-primary-100', 'text-primary-700');
+
+                // Masquer tous les contenus d'onglet
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Afficher le contenu correspondant
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+        });
+
+        // Animation des barres de progression
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
         });
     }
 </script>

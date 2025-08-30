@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserResource\Widgets;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
 
 class UserRegistrationsChart extends ChartWidget
@@ -12,36 +13,58 @@ class UserRegistrationsChart extends ChartWidget
 
     protected function getData(): array
     {
-        // Regrouper les utilisateurs par mois d'inscription sur les 6 derniers mois
+        // Définir la période des 6 derniers mois
+        $start = now()->subMonths(5)->startOfMonth();
+        $end = now()->endOfMonth();
+
+        // Récupérer les données groupées par mois avec année
         $data = User::query()
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
-            ->groupBy('month')
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('year', 'month')
+            ->orderBy('year')
             ->orderBy('month')
             ->get();
 
-        $months = [];
+        // Créer un tableau complet des 6 derniers mois
+        $period = CarbonPeriod::create($start, '1 month', $end);
         $counts = [];
+        $labels = [];
 
+        foreach ($period as $date) {
+            $key = $date->format('Y-m');
+            $counts[$key] = 0;
+            $labels[] = $date->locale('fr_FR')->isoFormat('MMMM YYYY');
+        }
+
+        // Remplir les données existantes
         foreach ($data as $entry) {
-            $months[] = Carbon::create()->month($entry->month)->locale('fr_FR')->isoFormat('MMMM'); // Mois en français
-            $counts[] = $entry->count;
+            $key = Carbon::create($entry->year, $entry->month)->format('Y-m');
+            $counts[$key] = $entry->count;
         }
 
         return [
             'datasets' => [
                 [
                     'label' => 'Utilisateurs inscrits',
-                    'data' => $counts,
-                    'backgroundColor' => '#3B82F6', // Bleu
+                    'data' => array_values($counts),
+                    'backgroundColor' => '#3B82F6',
+                    'borderColor' => '#2563EB',
+                    'fill' => true,
                 ],
             ],
-            'labels' => $months,
+            'labels' => $labels,
         ];
     }
 
     protected function getType(): string
     {
-        return 'bar'; // 'line', 'pie', etc.
+        return 'bar';
+    }
+
+    // Méthode rendue publique pour respecter l'interface
+    public function getDescription(): ?string
+    {
+        return 'Évolution des inscriptions sur les 6 derniers mois';
     }
 }
